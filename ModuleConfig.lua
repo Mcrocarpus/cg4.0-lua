@@ -1,3 +1,2 @@
 
-loadModule('admin')
-loadModule('adminCommands')
+--loadModule('admin')

@@ -4,7 +4,6 @@ local Modules = {};
 ---@class loadModuleOpt
 ---@field path string 路径默认moduleName.lua
 ---@field forceReload boolean 强制重新加载
----@field simpleModule boolean 是否兼容老的luaModule
 ---@field absolutePath boolean
 local function loadModuleFile(path, moduleName, forceReload)
   local ctx = {}
@@ -46,11 +45,7 @@ function _G.loadModule(moduleName, opt)
   end
   local oPath = path;
   if not opt.absolutePath then
-    if opt.simpleModule then
-      path = 'lua/Module/' .. path;
-    else
-      path = 'lua/Modules/' .. path;
-    end
+    path = 'lua/Modules/' .. path;
   end
   log('ModuleSystem', 'INFO', 'load module ', moduleName, path, forceReload)
   if Modules[moduleName] and not forceReload then
@@ -61,12 +56,7 @@ function _G.loadModule(moduleName, opt)
   end
   Modules[moduleName] = nil;
   local ctx, module;
-  if opt.simpleModule then
-    module = LegacyModule:new(moduleName);
-    ctx = module.context;
-  else
-    module, ctx = loadModuleFile(path, moduleName, forceReload);
-  end
+  module, ctx = loadModuleFile(path, moduleName, forceReload);
   if not module then
     return nil;
   end
@@ -77,21 +67,12 @@ function _G.loadModule(moduleName, opt)
   module.___aPath = path;
   module.___ctx = ctx;
   module.___absolutePath = opt.absolutePath;
-  module.___isSimpleModule = opt.simpleModule;
   local r1, e1 = pcall(module.load, module);
   if e1 then
     logError(moduleName, "load module error: " .. e1);
   end
   return module;
 end
-
----加载普通Module
-function _G.loadSimpleModule(moduleName)
-  _G.loadModule(moduleName, { simpleModule = true, forceReload = true })
-end
-
----加载普通Module
-_G.useModule = loadSimpleModule;
 
 function _G.unloadModule(moduleName)
   if Modules[moduleName] then
@@ -106,7 +87,7 @@ function _G.reloadModule(moduleName)
   if module then
     module:unload();
     local path = module.___path;
-    return loadModule(moduleName, { path = path, forceReload = true, simpleModule = module.___isSimpleModule, absolutePath = module.___absolutePath });
+    return loadModule(moduleName, { path = path, forceReload = true, absolutePath = module.___absolutePath });
   end
   return nil;
 end

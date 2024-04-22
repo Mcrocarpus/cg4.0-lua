@@ -159,7 +159,6 @@ function ModuleBase:load()
   for i, part in pairs(self.parts) do
     part.onLoad(self);
   end
-  self:migrate();
   self:onLoad()
 end
 
@@ -183,7 +182,5 @@ function ModuleBase:onUnload()
 end
 
 ModuleBase.parts = {
-  dofile('lua/libs/Module/Parts/Npc.lua'),
   dofile('lua/libs/Module/Parts/Assets.lua'),
-  dofile('lua/libs/Module/Parts/Char.lua'),
 }
