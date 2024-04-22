@@ -1,23 +1,5 @@
 local Modules = {};
-local _initialed = false
 
-function _G.moduleInitial()
-  if _initialed then
-    return
-  end
-  _initialed = true;
-  local sql = [[
-create table if not exists lua_migration
-(
-    id     int          not null,
-    module varchar(100) not null,
-    name   varchar(255) not null,
-    constraint lua_migration_pk
-        primary key (module, id)
-);
-]]
-  logInfo('ModuleSystem', 'initial:', SQL.querySQL(sql));
-end
 
 ---@class loadModuleOpt
 ---@field path string Â·¾¶Ä¬ÈÏmoduleName.lua
@@ -133,21 +115,3 @@ end
 function _G.getModule(moduleName)
   return Modules[moduleName];
 end
-
----@return string|nil
-function _G.findLegacyModuleName(path)
-  if path then
-    local moduleName;
-    for i, v in pairs(Modules) do
-      if v.___isSimpleModule and
-        (
-          v.___aPath == path
-            or string.sub(v.name, string.len(LegacyModule.name) + 2) == path
-        ) then
-        moduleName = i;
-      end
-    end
-    return moduleName;
-  end
-  return nil;
-end 

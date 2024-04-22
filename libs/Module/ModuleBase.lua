@@ -80,19 +80,6 @@ function ModuleBase:createPart(name)
   return SubModule;
 end
 
----@param version number 版本号
----@param name string 名字
----@param value function|string 具体迁移方法或sql
-function ModuleBase:addMigration(version, name, value)
-  local migrations = rawget(self, 'migrations')
-  --self:logDebug('addMigration', migrations);
-  if migrations == nil then
-    migrations = {}
-    rawset(self, 'migrations', migrations);
-  end
-  table.insert(migrations, { version = version, name = name, value = value });
-end
-
 ---@param eventName string
 ---@param fn function
 ---@param extSign string
@@ -126,31 +113,6 @@ function ModuleBase:unRegCallback(eventNameOrCallbackKey, fnOrCbIndex)
   logInfo(self.name, 'removeGlobalEvent', fnCb.key, fnCb.fnIndex, fnCb.fn);
   removeGlobalEvent(fnCb.key, fnCb.fnIndex, self.name, fnCb.extSign);
   self.callbacks[cbIndex] = nil;
-end
-
-function ModuleBase:migrate()
-  if self.migrations then
-    local ret = SQL.querySQL('select ifnull(max(id), 0) version from lua_migration where module = \'' .. self.name .. '\';');
-    local version = tonumber(ret[1][1]);
-    table.sort(self.migrations, function(a, b)
-      return b.version - a.version > 0
-    end)
-    for i, migration in ipairs(self.migrations) do
-      if migration.version > version then
-        self:logInfo('run migration: ' .. migration.version)
-        version = migration.version;
-        if type(migration.value) == 'function' then
-          migration.value();
-        elseif type(migration.value) == 'string' then
-          SQL.querySQL(migration.value);
-        end
-        SQL.querySQL('insert into lua_migration (id, name, module) values ('
-          .. SQL.sqlValue(migration.version) .. ', '
-          .. SQL.sqlValue(migration.name) .. ', '
-          .. SQL.sqlValue(self.name) .. ');');
-      end
-    end
-  end
 end
 
 function ModuleBase:log(level, msg, ...)
