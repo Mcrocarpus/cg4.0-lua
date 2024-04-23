@@ -7,7 +7,7 @@ local defaultChain = function(fnList, ...)
   for i, v in ipairs(fnList) do
     res = v(...)
   end
-  return res
+  --return res
 end
 
 local function makeEventHandle(name)
@@ -44,7 +44,8 @@ local function takeCallbacks(eventName, extraSign, shouldInit)
         NL['Reg' .. eventName](nil, name, extraSign);
       end
     elseif eventName == 'ProtocolOnRecv' then
-      Protocol.OnRecv(nil, name, extraSign);
+      --Protocol.OnRecv(nil, name, extraSign);
+      Protocol.OnRecv(nil, name);
     end
     return list, name, fn1;
   end
